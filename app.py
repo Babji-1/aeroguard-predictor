@@ -42,22 +42,22 @@ if uploaded_file:
     selected_row = test_df.iloc[[row_idx]]
     
     if st.button("Run Prediction"):
-        # 4. Extract ONLY the features the model needs
+        # 4. Extracting ONLY the features the model needs
         X = selected_row[active_features]
         
         # Predict current point-in-time
         scaled_X = scaler.transform(X)
         prediction = model.predict(scaled_X)[0]
         
-        # --- NEW: TREND SMOOTHING LOGIC ---
-        current_unit = selected_row['unit_nr'].values[0]
-        current_cycle = selected_row['time_cycles'].values[0]
+       ## trend smoothing for visualisation
+        current_unit = selected_row['engine_id'].values[0]
+        current_cycle = selected_row['cycle'].values[0]
         
-        # Filter all historical rows for this specific engine up to the selected cycle
+        # Filter all rows for this engine up to the selected cycle
         engine_history = test_df[
-            (test_df['unit_nr'] == current_unit) & 
-            (test_df['time_cycles'] <= current_cycle)
-        ].sort_values('time_cycles')
+            (test_df['engine_id'] == current_unit) & 
+            (test_df['cycle'] <= current_cycle)
+        ].sort_values('cycle')
         
         # Generate predictions for the engine's entire timeline up to this point
         hist_X = engine_history[active_features]
