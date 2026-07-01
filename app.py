@@ -85,7 +85,8 @@ if uploaded_file:
             
         # --- NEW: LINE CHART DISPLAY ---
         st.write(f"### 📈 RUL Timeline for Engine Unit {int(current_unit)}")
-        chart_data = engine_history[['time_cycles', 'Raw Prediction', 'Smoothed Trend']].set_index('time_cycles')
+        # Change 'time_cycles' to 'cycle' here:
+        chart_data = engine_history[['cycle', 'Raw Prediction', 'Smoothed Trend']].set_index('cycle')
         st.line_chart(chart_data)
         # -------------------------------
         
