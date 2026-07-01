@@ -19,6 +19,8 @@ if uploaded_file:
     # 2. Check for length mismatch
     if len(test_df.columns) == len(active_features):
         test_df.columns = active_features
+    elif len(test_df.columns) == 26:
+        test_df.columns = 26
     else:
         st.warning(f"File has {len(test_df.columns)} columns, but model expects {len(active_features)}.")
        
