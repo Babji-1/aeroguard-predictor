@@ -2,38 +2,38 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-### Loading the exact model and pipelines
+# Load models
 model = joblib.load('best_model.pkl')
 scaler = joblib.load('scaler.pkl')
 active_features = joblib.load('features.pkl')
 
-st.title("✈️ AeroGuard Predictor")
-st.subheader("Predictive Engine RUL Estimation")
-st.write("Enter the current sensor telemetry to estimate the Remaining Useful Life (RUL).")
+st.title("✈️ AeroGuard Predictor: Test Bench")
 
-## Creating input fields for the active sensors
-input_data = {}
-cols = st.columns(3) # Organizing inputs into 3 columns for better UI
+# 1. Upload Test CSV
+uploaded_file = st.file_uploader("Upload your test CSV file", type=['csv','txt'])
 
-for i, feature in enumerate(active_features):
-    with cols[i % 3]:
-        input_data[feature] = st.number_input(f"{feature}", value=0.0)
-
-# 3. Predict button
-if st.button("Predict Remaining Useful Life"):
-    # Convert input to DataFrame
-    df_input = pd.DataFrame([input_data])
+if uploaded_file:
+    test_df = pd.read_csv(uploaded_file, sep='\s+')
     
-    # Scale it using the saved scaler
-    scaled_input = scaler.transform(df_input)
+    # 2. Select a row index
+    row_idx = st.number_input("Select row index to test", min_value=0, max_value=len(test_df)-1, step=1)
     
-    # Predict
-    prediction = model.predict(scaled_input)[0]
+    selected_row = test_df.iloc[[row_idx]]
     
-    # Display result
-    st.metric("Estimated Cycles Remaining", f"{int(prediction)} cycles")
-    
-    if prediction < 50:
-        st.error("⚠️ Warning: Engine approaching critical status! Schedule maintenance immediately.")
-    else:
-        st.success("✅ Engine status: Stable.")
+    if st.button("Run Prediction"):
+        # Extract features and ground truth
+        X = selected_row[active_features]
+        y_true = selected_row['RUL'].values[0] # Assuming your file has a 'RUL' column
+        
+        # Predict
+        scaled_X = scaler.transform(X)
+        prediction = model.predict(scaled_X)[0]
+        
+        # Display Results
+        col1, col2 = st.columns(2)
+        col1.metric("Model Prediction", f"{int(prediction)} cycles")
+        col2.metric("Ground Truth (Actual)", f"{int(y_true)} cycles")
+        
+        # Show Error
+        error = abs(prediction - y_true)
+        st.write(f"**Absolute Error for this row:** {error:.2f}")
