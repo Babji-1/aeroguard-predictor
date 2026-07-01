@@ -45,25 +45,52 @@ if uploaded_file:
         # 4. Extract ONLY the features the model needs
         X = selected_row[active_features]
         
-        # Predict
+        # Predict current point-in-time
         scaled_X = scaler.transform(X)
         prediction = model.predict(scaled_X)[0]
         
+        # --- NEW: TREND SMOOTHING LOGIC ---
+        current_unit = selected_row['unit_nr'].values[0]
+        current_cycle = selected_row['time_cycles'].values[0]
+        
+        # Filter all historical rows for this specific engine up to the selected cycle
+        engine_history = test_df[
+            (test_df['unit_nr'] == current_unit) & 
+            (test_df['time_cycles'] <= current_cycle)
+        ].sort_values('time_cycles')
+        
+        # Generate predictions for the engine's entire timeline up to this point
+        hist_X = engine_history[active_features]
+        hist_scaled = scaler.transform(hist_X)
+        engine_history['Raw Prediction'] = model.predict(hist_scaled)
+        
+        # Apply a rolling window average (e.g., 5 cycles) to smooth sensor noise
+        engine_history['Smoothed Trend'] = engine_history['Raw Prediction'].rolling(window=5, min_periods=1).mean()
+        smoothed_prediction = engine_history['Smoothed Trend'].iloc[-1]
+        # ----------------------------------
+
         # Display Results
-        col1, col2 = st.columns(2)
-        col1.metric("Model Prediction", f"{int(prediction)} cycles")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Raw Prediction", f"{int(prediction)} cycles")
+        col2.metric("Smoothed Prediction", f"{int(smoothed_prediction)} cycles")
         
         # Safe Logic for Ground Truth
         if 'RUL' in selected_row.columns:
             y_true = selected_row['RUL'].values[0]
-            col2.metric("Ground Truth (Actual)", f"{int(y_true)} cycles")
-            error = abs(prediction - y_true)
-            st.write(f"**Absolute Error for this row:** {error:.2f}")
+            col3.metric("Ground Truth (Actual)", f"{int(y_true)} cycles")
+            error = abs(smoothed_prediction - y_true)
+            st.write(f"**Absolute Error (Smoothed):** {error:.2f}")
         else:
-            col2.metric("Ground Truth (Actual)", "N/A (Raw Data)")
+            col3.metric("Ground Truth (Actual)", "N/A (Raw Data)")
             
-        # Maintenance Alert Logic
-        if prediction < 50:
+        # --- NEW: LINE CHART DISPLAY ---
+        st.write(f"### 📈 RUL Timeline for Engine Unit {int(current_unit)}")
+        chart_data = engine_history[['time_cycles', 'Raw Prediction', 'Smoothed Trend']].set_index('time_cycles')
+        st.line_chart(chart_data)
+        # -------------------------------
+        
+        # Maintenance Alert Logic (Using the smoothed prediction now)
+        if smoothed_prediction < 50:
             st.error("⚠️ Warning: Engine approaching critical status! Schedule maintenance.")
         else:
             st.success("✅ Engine status: Stable.")
