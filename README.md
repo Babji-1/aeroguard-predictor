@@ -84,16 +84,14 @@ streamlit run app.py
 
 ---
 
-# Dashboard
+## 🔗 Project Resources
 
-**Streamlit App**
-
-https://aeroguard-predictor.streamlit.app/
-
-**Tableau Dashboard**
-https://public.tableau.com/app/profile/kennedy.kiiru/viz/Aeroguard/Dashboard1
-
----
+| Resource | Link |
+|----------|------|
+| 🌐 Live Application | [AeroGuard Predictor (Streamlit)](https://aeroguard-predictor.streamlit.app/) |
+| 📊 Tableau Dashboard | [Interactive Dashboard](https://public.tableau.com/app/profile/kennedy.kiiru/viz/Aeroguard/Dashboard1) |
+| 🎤 Project Presentation | [Canva Presentation](https://canva.link/e9ryb48krkqfrl8) |
+| 💻 Source Code | [GitHub Repository](https://github.com/Babji-1/aeroguard-predictor) |
 
 # A Project by:
 
