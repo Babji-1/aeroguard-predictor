@@ -91,12 +91,11 @@ streamlit run app.py
 https://aeroguard-predictor.streamlit.app/
 
 **Tableau Dashboard**
-
-*Coming Soon*
+https://public.tableau.com/app/profile/kennedy.kiiru/viz/Aeroguard/Dashboard1
 
 ---
 
-# Team Members
+# A Project by:
 
 **Kennedy Kiiru**
 
